@@ -8,9 +8,9 @@ const PriceHistory = require("../models/PriceHistoryModel");
 router.get("/", async (req, res) => {
   try {
     const menuItems = await MenuItem.find({isDeleted: false});
-    res.json(menuItems);
-  } catch (err) {
-    res.status(400).json({message: err.message});
+    return res.json(menuItems);
+  } catch (error) {
+    return res.status(400).json({error});
   }
 });
 
@@ -57,8 +57,8 @@ router.post("/", async (req, res) => {
       );
     }
     return res.json(createdMenu);
-  } catch (err) {
-    res.status(400).json({message: err.message});
+  } catch (error) {
+    return res.status(400).json({error});
   }
 });
 
