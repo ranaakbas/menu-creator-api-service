@@ -5,23 +5,21 @@ const Category = require("../models/CategoryModel");
 const MenuItemCategory = require("../models/MenuItemCategoryModel");
 const PriceHistory = require("../models/PriceHistoryModel");
 
-router.get("/", (req, res) => {
-  MenuItem.find({isDeleted: false})
-    .then(async result => {
-      const menuItems = await MenuItem.find({isDeleted: false});
-      res.json(menuItems);
-    })
-    .catch(err => {
-      console.log(err);
-    });
+router.get("/", async (req, res) => {
+  try {
+    const menuItems = await MenuItem.find({isDeleted: false});
+    res.json(menuItems);
+  } catch (err) {
+    res.status(400).json({message: err.message});
+  }
 });
 
 router.post("/", async (req, res) => {
-  const {name, description, image_url, price, categories} = req.body;
+  const {name, description, imageUrl, price, categories} = req.body;
 
   const errors = [];
   if (!name) errors.push("name is required");
-  if (!image_url) errors.push("image_url is required");
+  if (!imageUrl) errors.push("imageUrl is required");
   if (!price) errors.push("price is required");
   if (!categories) errors.push("categories is required");
   if (errors.length > 0) {
@@ -31,7 +29,7 @@ router.post("/", async (req, res) => {
   if (typeof name !== "string" || name.length < 3 || name.length > 250) errors.push("name is invalid");
   if (description && (typeof description !== "string" || description.length < 3 || description.length > 250))
     errors.push("description is invalid");
-  if (typeof image_url !== "string") errors.push("image_url is invalid");
+  if (typeof imageUrl !== "string") errors.push("imageUrl is invalid");
   if (typeof price !== "number" || price < 0) errors.push("price is invalid");
   if (!Array.isArray(categories)) errors.push("categories is invalid");
   if (errors.length > 0) {
@@ -44,7 +42,7 @@ router.post("/", async (req, res) => {
   }
 
   try {
-    const createdMenu = await MenuItem.create({name, description, image_url, price});
+    const createdMenu = await MenuItem.create({name, description, imageUrl, price});
     await PriceHistory.create({menuItem: createdMenu._id, price: createdMenu.price});
 
     for (const category of categories) {
@@ -52,15 +50,15 @@ router.post("/", async (req, res) => {
         {category, menuItem: createdMenu._id},
         {},
         {
-          upsert: true, // yoksa oluştur
-          setDefaultsOnInsert: true, // defautl degerleri ekle
-          runValidators: true // validate et
+          upsert: true, // // create if it does not exist
+          setDefaultsOnInsert: true, // add default values
+          runValidators: true // validate
         }
       );
     }
-    res.json(createdMenu);
+    return res.json(createdMenu);
   } catch (err) {
-    console.log(err);
+    res.status(400).json({message: err.message});
   }
 });
 
