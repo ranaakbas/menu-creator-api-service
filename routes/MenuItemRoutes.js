@@ -10,7 +10,7 @@ router.get("/", async (req, res) => {
     const menuItems = await MenuItem.find({isDeleted: false});
     return res.json(menuItems);
   } catch (error) {
-    return res.status(400).json({error});
+    return res.status(400).json({errors: [error.message]});
   }
 });
 
@@ -23,7 +23,7 @@ router.post("/", async (req, res) => {
   if (!price) errors.push("price is required");
   if (!categories) errors.push("categories is required");
   if (errors.length > 0) {
-    return res.status(400).json({errors});
+    return res.status(400).json({errors: [error.message]});
   }
 
   if (typeof name !== "string" || name.length < 3 || name.length > 250) errors.push("name is invalid");
@@ -33,7 +33,7 @@ router.post("/", async (req, res) => {
   if (typeof price !== "number" || price < 0) errors.push("price is invalid");
   if (!Array.isArray(categories)) errors.push("categories is invalid");
   if (errors.length > 0) {
-    return res.status(400).json({errors});
+    return res.status(400).json({errors: [error.message]});
   }
 
   const categoryCount = await Category.countDocuments({_id: {$in: categories}});
@@ -58,7 +58,7 @@ router.post("/", async (req, res) => {
     }
     return res.json(createdMenu);
   } catch (error) {
-    return res.status(400).json({error});
+    return res.status(400).json({errors: [error.message]});
   }
 });
 
