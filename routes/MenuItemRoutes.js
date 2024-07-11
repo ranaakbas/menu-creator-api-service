@@ -62,4 +62,29 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.get("/:id", async (req, res) => {
+  try {
+    const menuItem = await MenuItem.findById(req.params.id);
+    if (!menuItem || menuItem.isDeleted) {
+      return res.status(404).json({errors: ["menu item not found"]});
+    }
+    return res.json(menuItem);
+  } catch (error) {
+    return res.status(400).json({errors: [error.message]});
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  try {
+    const menuItem = await MenuItem.findById(req.params.id);
+    if (!menuItem || menuItem.isDeleted) {
+      return res.status(404).json({errors: ["menu item not found"]});
+    }
+    await MenuItem.findByIdAndUpdate(menuItem._id, {isDeleted: true});
+    return res.json({errors: ["menu item deleted successfully"]});
+  } catch (error) {
+    return res.status(400).json({errors: [error.message]});
+  }
+});
+
 module.exports = router;
