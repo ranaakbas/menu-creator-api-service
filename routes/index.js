@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const MenuItemRoutes = require("./MenuItemRoutes");
 
-router.get("/", (req, res) => {
-  res.send("Welcome");
-});
+router.use("/menu-items", MenuItemRoutes);
 
 module.exports = router;
