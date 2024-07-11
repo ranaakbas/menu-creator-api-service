@@ -22,8 +22,7 @@ router.post("/", async (req, res) => {
     if (existingCategory) {
       return res.status(400).json({errors: ["Already exists"]});
     }
-    const category = new Category({name});
-    const newCategory = await category.save();
+    const newCategory = await Category.create({name});
     return res.json(newCategory);
   } catch (error) {
     return res.status(400).json({errors: [error.message]});
