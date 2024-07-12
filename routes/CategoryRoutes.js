@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const Category = require("../models/CategoryModel");
-const MenuItemCategory = require("../models/MenuItemCategoryModel");
 const MenuItem = require("../models/MenuItemModel");
 
 router.get("/", async (req, res) => {
