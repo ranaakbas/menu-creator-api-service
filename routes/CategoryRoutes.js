@@ -7,7 +7,7 @@ router.get("/", async (req, res) => {
     const categories = await Category.find();
     return res.json(categories);
   } catch (error) {
-    return res.status(400).json({errors: ["categories could not be listed"]});
+    return res.status(400).json({errors: [error.message]});
   }
 });
 
@@ -25,7 +25,7 @@ router.post("/", async (req, res) => {
     const newCategory = await Category.create({name});
     return res.json(newCategory);
   } catch (error) {
-    return res.status(400).json({errors: ["could not create new categories"]});
+    return res.status(400).json({errors: [error.message]});
   }
 });
 

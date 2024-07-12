@@ -10,7 +10,7 @@ router.get("/", async (req, res) => {
     const menuItems = await MenuItem.find({isDeleted: false});
     return res.json(menuItems);
   } catch (error) {
-    return res.status(400).json({errors: ["menu items could not be listed"]});
+    return res.status(400).json({errors: [error.message]});
   }
 });
 
@@ -58,7 +58,7 @@ router.post("/", async (req, res) => {
     }
     return res.json(createdMenu);
   } catch (error) {
-    return res.status(400).json({errors: ["could not create new menu item"]});
+    return res.status(400).json({errors: [error.message]});
   }
 });
 
@@ -68,7 +68,7 @@ router.get("/:id", async (req, res) => {
     if (!menuItem) return res.status(404).json({errors: ["menu item not found"]});
     return res.json(menuItem);
   } catch (error) {
-    return res.status(400).json({errors: ["menu item could not be displayed"]});
+    return res.status(400).json({errors: [error.message]});
   }
 });
 
@@ -95,11 +95,10 @@ router.put("/:id", async (req, res) => {
   }
 
   try {
-    const menuItem = await MenuItem.findById({_id: req.params.id});
-    if (!menuItem || menuItem.isDeleted) {
+    const menuItem = await MenuItem.exists({_id: req.params.id, isDeleted: false});
+    if (!menuItem) {
       return res.status(404).json({errors: ["menu item not found"]});
     }
-
     const updatedMenu = await MenuItem.findByIdAndUpdate(
       menuItem._id,
       {name, description, imageUrl, price},
@@ -123,7 +122,7 @@ router.put("/:id", async (req, res) => {
     }
     return res.json(updatedMenu);
   } catch (error) {
-    return res.status(400).json({errors: ["could not update menu item"]});
+    return res.status(400).json({errors: [error.message]});
   }
 });
 
@@ -136,7 +135,7 @@ router.delete("/:id", async (req, res) => {
     await MenuItem.findByIdAndUpdate(menuItem._id, {isDeleted: true});
     return res.json({message: "menu item deleted successfully"});
   } catch (error) {
-    return res.status(400).json({errors: ["menu item could not deleted"]});
+    return res.status(400).json({errors: [error.message]});
   }
 });
 
