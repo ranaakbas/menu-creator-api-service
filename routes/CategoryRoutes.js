@@ -49,11 +49,11 @@ router.put("/:id", async (req, res) => {
     if (!name) {
       return res.status(400).json({errors: ["name is required"]});
     }
-    const existingCategory = await Category.findOne({name: name});
-    if (existingCategory && existingCategory._id.toString() !== id) {
+    const isDifferentCategoryHasSameName = await Category.exists({name: name, _id: {$ne: id}});
+    if (isDifferentCategoryHasSameName) {
       return res.status(400).json({errors: "already exists"});
     }
-    const category = await Category.findById(id);
+    const category = await Category.exists({_id: id});
     if (!category) {
       return res.status(404).json({message: "category not found"});
     }
@@ -69,7 +69,7 @@ router.delete("/:id", async (req, res) => {
   try {
     const {id} = req.params;
 
-    const category = await Category.findById(id);
+    const category = await Category.exists({_id: id});
     if (!category) {
       return res.status(400).json({errors: "category not found"});
     }
