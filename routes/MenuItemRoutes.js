@@ -148,9 +148,8 @@ router.get("/:id/price-history", async (req, res) => {
       return res.status(404).json({errors: ["menu item not found"]});
     }
     const priceHistory = await PriceHistory.find({menuItem: id});
-    const data = priceHistory.map(e => e.price);
 
-    return res.json(data);
+    return res.json(priceHistory);
   } catch (error) {
     return res.status(400).json({errors: [error.message]});
   }
