@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Category = require("../models/CategoryModel");
 const MenuItem = require("../models/MenuItemModel");
+const MenuItemCategory = require("../models/MenuItemCategoryModel");
 
 router.get("/", async (req, res) => {
   try {
@@ -32,10 +33,12 @@ router.post("/", async (req, res) => {
 
 router.get("/:id/items", async (req, res) => {
   try {
-    const {id} = req.params.id;
+    const {id} = req.params;
 
-    const items = await MenuItem.find({category: id, isDeleted: false});
-    return res.json(items);
+    const menuItemCategories = await MenuItemCategory.find({category: id}).populate("menuItem");
+    const data = menuItemCategories.map(e => e.menuItem);
+
+    return res.json(data);
   } catch (error) {
     return res.status(400).json({errors: [error.message]});
   }
