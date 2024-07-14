@@ -139,4 +139,20 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+router.get("/:id/price-history", async (req, res) => {
+  try {
+    const {id} = req.params;
+
+    const menuItem = await MenuItem.exists({_id: req.params.id, isDeleted: false});
+    if (!menuItem) {
+      return res.status(404).json({errors: ["menu item not found"]});
+    }
+    const priceHistory = await PriceHistory.find({menuItem: id});
+
+    return res.json(priceHistory);
+  } catch (error) {
+    return res.status(400).json({errors: [error.message]});
+  }
+});
+
 module.exports = router;
