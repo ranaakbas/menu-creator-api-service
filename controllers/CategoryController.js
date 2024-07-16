@@ -6,7 +6,7 @@ const listCategories = async (req, res) => {
     const categories = await Category.find();
     return res.json(categories);
   } catch (error) {
-    return res.status(400).json({errors: [error.message]});
+    return returnError(res, error);
   }
 };
 
@@ -24,7 +24,7 @@ const addCategory = async (req, res) => {
     const newCategory = await Category.create({name});
     return res.json(newCategory);
   } catch (error) {
-    return res.status(400).json({errors: [error.message]});
+    return returnError(res, error);
   }
 };
 
@@ -37,7 +37,7 @@ const listCategoryItems = async (req, res) => {
 
     return res.json(data);
   } catch (error) {
-    return res.status(400).json({errors: [error.message]});
+    return returnError(res, error);
   }
 };
 
@@ -55,13 +55,13 @@ const updateCategory = async (req, res) => {
     }
     const category = await Category.exists({_id: id});
     if (!category) {
-      return res.status(404).json({message: "category not found"});
+      return res.status(404).json({errors: "category not found"});
     }
 
     const updatedCategory = await Category.findByIdAndUpdate(id, {name: name}, {new: true});
     return res.json(updatedCategory);
   } catch (error) {
-    return res.status(400).json({errors: [error.message]});
+    return returnError(res, error);
   }
 };
 
@@ -77,8 +77,12 @@ const deleteCategory = async (req, res) => {
     await Category.findByIdAndDelete(id);
     return res.json({message: "category deleted successfully"});
   } catch (error) {
-    return res.status(400).json({errors: [error.message]});
+    return returnError(res, error);
   }
+};
+
+const returnError = (res, error) => {
+  return res.status(400).json({errors: [error.message]});
 };
 
 module.exports = {

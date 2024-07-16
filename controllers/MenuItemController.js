@@ -8,7 +8,7 @@ const listMenuItems = async (req, res) => {
     const menuItems = await MenuItem.find({isDeleted: false});
     return res.json(menuItems);
   } catch (error) {
-    return res.status(400).json({errors: [error.message]});
+    return returnError(res, error);
   }
 };
 
@@ -56,7 +56,7 @@ const addMenuItem = async (req, res) => {
     }
     return res.json(createdMenu);
   } catch (error) {
-    return res.status(400).json({errors: [error.message]});
+    return returnError(res, error);
   }
 };
 
@@ -66,7 +66,7 @@ const getMenuItem = async (req, res) => {
     if (!menuItem) return res.status(404).json({errors: ["menu item not found"]});
     return res.json(menuItem);
   } catch (error) {
-    return res.status(400).json({errors: [error.message]});
+    return returnError(res, error);
   }
 };
 
@@ -120,7 +120,7 @@ const updateMenuItem = async (req, res) => {
     }
     return res.json(updatedMenu);
   } catch (error) {
-    return res.status(400).json({errors: [error.message]});
+    return returnError(res, error);
   }
 };
 
@@ -133,7 +133,7 @@ const deleteMenuItem = async (req, res) => {
     await MenuItem.findByIdAndUpdate(menuItem._id, {isDeleted: true});
     return res.json({message: "menu item deleted successfully"});
   } catch (error) {
-    return res.status(400).json({errors: [error.message]});
+    return returnError(res, error);
   }
 };
 
@@ -149,8 +149,12 @@ const getPriceHistory = async (req, res) => {
 
     return res.json(priceHistory);
   } catch (error) {
-    return res.status(400).json({errors: [error.message]});
+    return returnError(res, error);
   }
+};
+
+const returnError = (res, error) => {
+  return res.status(400).json({errors: [error.message]});
 };
 
 module.exports = {
