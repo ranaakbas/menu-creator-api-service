@@ -1,7 +1,7 @@
 const Category = require("../models/CategoryModel");
 const MenuItemCategory = require("../models/MenuItemCategoryModel");
 
-const listCategories = async (req, res) => {
+exports.listCategories = async (req, res) => {
   try {
     const categories = await Category.find();
     return res.json(categories);
@@ -10,17 +10,34 @@ const listCategories = async (req, res) => {
   }
 };
 
-const addCategory = async (req, res) => {
+exports.checkReqBody = async (req, res, next) => {
   try {
     const {name} = req.body;
-
     if (!name) {
       return res.status(400).json({errors: ["Name is required"]});
     }
-    const existingCategory = await Category.findOne({name: name});
+    next();
+  } catch (error) {
+    return returnError(res, error);
+  }
+};
+
+exports.checkExistCategory = async (req, res, next) => {
+  try {
+    const {name} = req.body;
+    const existingCategory = await Category.findOne({name});
     if (existingCategory) {
       return res.status(400).json({errors: ["Already exists"]});
     }
+    next();
+  } catch (error) {
+    return returnError(res, error);
+  }
+};
+
+exports.createCategory = async (req, res, next) => {
+  try {
+    const {name} = req.body;
     const newCategory = await Category.create({name});
     return res.json(newCategory);
   } catch (error) {
@@ -28,7 +45,7 @@ const addCategory = async (req, res) => {
   }
 };
 
-const listCategoryItems = async (req, res) => {
+exports.listCategoryItems = async (req, res) => {
   try {
     const {id} = req.params;
 
@@ -41,23 +58,37 @@ const listCategoryItems = async (req, res) => {
   }
 };
 
-const updateCategory = async (req, res) => {
+exports.checkUniqueName = async (req, res, next) => {
   try {
     const {id} = req.params;
     const {name} = req.body;
-
-    if (!name) {
-      return res.status(400).json({errors: ["name is required"]});
-    }
     const isDifferentCategoryHasSameName = await Category.exists({name: name, _id: {$ne: id}});
     if (isDifferentCategoryHasSameName) {
       return res.status(400).json({errors: "already exists"});
     }
+    next();
+  } catch (error) {
+    return returnError(res, error);
+  }
+};
+
+exports.checkNotExistCategory = async (req, res, next) => {
+  try {
+    const {id} = req.params;
     const category = await Category.exists({_id: id});
     if (!category) {
       return res.status(404).json({errors: "category not found"});
     }
+    next();
+  } catch (error) {
+    return returnError(res, error);
+  }
+};
 
+exports.updateCategory = async (req, res) => {
+  try {
+    const {id} = req.params;
+    const {name} = req.body;
     const updatedCategory = await Category.findByIdAndUpdate(id, {name: name}, {new: true});
     return res.json(updatedCategory);
   } catch (error) {
@@ -65,15 +96,8 @@ const updateCategory = async (req, res) => {
   }
 };
 
-const deleteCategory = async (req, res) => {
+exports.deleteCategory = async (req, res) => {
   try {
-    const {id} = req.params;
-
-    const category = await Category.exists({_id: id});
-    if (!category) {
-      return res.status(400).json({errors: "category not found"});
-    }
-
     await Category.findByIdAndDelete(id);
     return res.json({message: "category deleted successfully"});
   } catch (error) {
@@ -83,12 +107,4 @@ const deleteCategory = async (req, res) => {
 
 const returnError = (res, error) => {
   return res.status(400).json({errors: [error.message]});
-};
-
-module.exports = {
-  listCategories,
-  addCategory,
-  listCategoryItems,
-  updateCategory,
-  deleteCategory
 };
