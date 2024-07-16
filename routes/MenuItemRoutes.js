@@ -8,7 +8,6 @@ router.post(
   controller.checkRequiredFields,
   controller.checkResponseRight,
   controller.checkValidID,
-  controller.addMenuItem,
   controller.createMenuItem,
   controller.createPriceHistory,
   controller.addItemToCategory,
