@@ -105,7 +105,3 @@ exports.deleteCategory = async (req, res) => {
     return helpers.returnError;
   }
 };
-
-const returnError = (res, error) => {
-  return res.status(400).json({errors: [error.message]});
-};
