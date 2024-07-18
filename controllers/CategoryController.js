@@ -1,12 +1,13 @@
 const Category = require("../models/CategoryModel");
 const MenuItemCategory = require("../models/MenuItemCategoryModel");
+const helpers = require("../helpers");
 
 exports.listCategories = async (req, res) => {
   try {
     const categories = await Category.find();
     return res.json(categories);
   } catch (error) {
-    return returnError(res, error);
+    return helpers.returnError;
   }
 };
 
@@ -18,7 +19,7 @@ exports.checkRequiredFields = async (req, res, next) => {
     }
     next();
   } catch (error) {
-    return returnError(res, error);
+    return helpers.returnError;
   }
 };
 
@@ -31,7 +32,7 @@ exports.checkCategoryAlreadyExists = async (req, res, next) => {
     }
     next();
   } catch (error) {
-    return returnError(res, error);
+    return helpers.returnError;
   }
 };
 
@@ -41,7 +42,7 @@ exports.createCategory = async (req, res, next) => {
     const newCategory = await Category.create({name});
     return res.json(newCategory);
   } catch (error) {
-    return returnError(res, error);
+    return helpers.returnError;
   }
 };
 
@@ -54,7 +55,7 @@ exports.listCategoryItems = async (req, res) => {
 
     return res.json(data);
   } catch (error) {
-    return returnError(res, error);
+    return helpers.returnError;
   }
 };
 
@@ -68,7 +69,7 @@ exports.checkNameIsUnique = async (req, res, next) => {
     }
     next();
   } catch (error) {
-    return returnError(res, error);
+    return helpers.returnError;
   }
 };
 
@@ -81,7 +82,7 @@ exports.checkCategoryIsExist = async (req, res, next) => {
     }
     next();
   } catch (error) {
-    return returnError(res, error);
+    return helpers.returnError;
   }
 };
 
@@ -92,7 +93,7 @@ exports.updateCategory = async (req, res) => {
     const updatedCategory = await Category.findByIdAndUpdate(id, {name: name}, {new: true});
     return res.json(updatedCategory);
   } catch (error) {
-    return returnError(res, error);
+    return helpers.returnError;
   }
 };
 
@@ -101,7 +102,7 @@ exports.deleteCategory = async (req, res) => {
     await Category.findByIdAndDelete(id);
     return res.json({message: "category deleted successfully"});
   } catch (error) {
-    return returnError(res, error);
+    return helpers.returnError;
   }
 };
 
