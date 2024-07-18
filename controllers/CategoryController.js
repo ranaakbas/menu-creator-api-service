@@ -10,7 +10,7 @@ exports.listCategories = async (req, res) => {
   }
 };
 
-exports.checkReqBody = async (req, res, next) => {
+exports.checkRequiredFields = async (req, res, next) => {
   try {
     const {name} = req.body;
     if (!name) {
@@ -22,10 +22,10 @@ exports.checkReqBody = async (req, res, next) => {
   }
 };
 
-exports.checkExistCategory = async (req, res, next) => {
+exports.checkCategoryAlreadyExists = async (req, res, next) => {
   try {
     const {name} = req.body;
-    const existingCategory = await Category.findOne({name});
+    const existingCategory = await Category.exists({name});
     if (existingCategory) {
       return res.status(400).json({errors: ["Already exists"]});
     }
@@ -58,7 +58,7 @@ exports.listCategoryItems = async (req, res) => {
   }
 };
 
-exports.checkUniqueName = async (req, res, next) => {
+exports.checkNameIsUnique = async (req, res, next) => {
   try {
     const {id} = req.params;
     const {name} = req.body;
@@ -72,7 +72,7 @@ exports.checkUniqueName = async (req, res, next) => {
   }
 };
 
-exports.checkNotExistCategory = async (req, res, next) => {
+exports.checkCategoryIsExist = async (req, res, next) => {
   try {
     const {id} = req.params;
     const category = await Category.exists({_id: id});

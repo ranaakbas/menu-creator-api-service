@@ -26,7 +26,7 @@ exports.checkRequiredFields = (req, res, next) => {
   next();
 };
 
-exports.checkResponseRight = (req, res, next) => {
+exports.checkFieldsAreValid = (req, res, next) => {
   const {name, description, imageUrl, price, categories} = req.body;
 
   const errors = [];
@@ -39,11 +39,13 @@ exports.checkResponseRight = (req, res, next) => {
   if (errors.length > 0) {
     return res.status(400).json({errors});
   }
+
+  res.locals = {name, description, imageUrl, price, categories};
   next();
 };
 
-exports.checkValidID = async (req, res, next) => {
-  const {categories} = req.body;
+exports.checkCategoryIdsValid = async (req, res, next) => {
+  const {categories} = res.locals;
   const categoryCount = await Category.countDocuments({_id: {$in: categories}});
   if (categoryCount !== categories.length) {
     return res.status(400).json({errors: ["some category ids are invalid"]});
@@ -53,19 +55,20 @@ exports.checkValidID = async (req, res, next) => {
 
 exports.createMenuItem = async (req, res, next) => {
   try {
-    const {name, description, imageUrl, price} = req.body;
+    const {name, description, imageUrl, price} = res.locals;
     const createdMenu = await MenuItem.create({name, description, imageUrl, price});
-    req.createdMenu = createdMenu;
+    res.locals = {...res.locals, createdMenu};
     next();
   } catch (error) {
     return returnError(res, error);
   }
 };
 
-exports.createPriceHistory = async (req, res) => {
+exports.createPriceHistory = async (req, res, next) => {
   try {
-    const createdMenu = req.createdMenu;
+    const {createdMenu} = res.locals;
     await PriceHistory.create({menuItem: createdMenu._id, price: createdMenu.price});
+    next();
   } catch (error) {
     return returnError(res, error);
   }
@@ -73,7 +76,7 @@ exports.createPriceHistory = async (req, res) => {
 
 exports.addItemToCategory = async (req, res) => {
   try {
-    const {categories} = req.body;
+    const {categories} = res.locals;
     for (const category of categories) {
       await MenuItemCategory.findOneAndUpdate(
         {category, menuItem: createdMenu._id},
@@ -85,13 +88,6 @@ exports.addItemToCategory = async (req, res) => {
         }
       );
     }
-  } catch (error) {
-    return returnError(res, error);
-  }
-};
-
-exports.returnCreateMenuItem = (req, res) => {
-  try {
     return res.json(createdMenu);
   } catch (error) {
     return returnError(res, error);
@@ -114,7 +110,7 @@ exports.isMenuItemExist = async (req, res, next) => {
     if (!menuItem) {
       return res.status(404).json({errors: ["menu item not found"]});
     }
-    req.menuItem = menuItem;
+    res.locals = menuItem;
     next();
   } catch (error) {
     return returnError(res, error);
@@ -122,7 +118,7 @@ exports.isMenuItemExist = async (req, res, next) => {
 };
 
 exports.updateMenuItem = async (req, res, next) => {
-  const {name, description, imageUrl, price, categories} = req.body;
+  const {name, description, imageUrl, price} = req.body;
 
   try {
     const menuItem = req.menuItem;
@@ -131,7 +127,7 @@ exports.updateMenuItem = async (req, res, next) => {
       {name, description, imageUrl, price},
       {new: true}
     );
-    req.updatedMenu = updatedMenu;
+    res.locals = updatedMenu;
     next();
   } catch (error) {
     return returnError(res, error);
@@ -167,14 +163,6 @@ exports.updateMenuItemCategory = async (req, res, next) => {
         }
       );
     }
-    next();
-  } catch (error) {
-    return returnError(res, error);
-  }
-};
-
-exports.returnUpdateMenuItem = async (req, res) => {
-  try {
     return res.json(updatedMenu);
   } catch (error) {
     return returnError(res, error);
@@ -183,7 +171,7 @@ exports.returnUpdateMenuItem = async (req, res) => {
 
 exports.deleteMenuItem = async (req, res) => {
   try {
-    const menuItem = req.menuItem;
+    const {menuItem} = res.locals;
     await MenuItem.findByIdAndUpdate(menuItem._id, {isDeleted: true});
     return res.json({message: "menu item deleted successfully"});
   } catch (error) {
