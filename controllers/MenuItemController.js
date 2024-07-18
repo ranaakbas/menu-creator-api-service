@@ -9,7 +9,7 @@ exports.listMenuItems = async (req, res) => {
     const menuItems = await MenuItem.find({isDeleted: false});
     return res.json(menuItems);
   } catch (error) {
-    return helpers.returnError;
+    return helpers.returnError(res, error);
   }
 };
 
@@ -61,7 +61,7 @@ exports.createMenuItem = async (req, res, next) => {
     res.locals = {...res.locals, createdMenu};
     next();
   } catch (error) {
-    return helpers.returnError;
+    return helpers.returnError(res, error);
   }
 };
 
@@ -71,7 +71,7 @@ exports.createPriceHistory = async (req, res, next) => {
     await PriceHistory.create({menuItem: createdMenu._id, price: createdMenu.price});
     next();
   } catch (error) {
-    return helpers.returnError;
+    return helpers.returnError(res, error);
   }
 };
 
@@ -91,7 +91,7 @@ exports.addItemToCategory = async (req, res) => {
     }
     return res.json(createdMenu);
   } catch (error) {
-    return helpers.returnError;
+    return helpers.returnError(res, error);
   }
 };
 
@@ -101,7 +101,7 @@ exports.getMenuItem = async (req, res) => {
     if (!menuItem) return res.status(404).json({errors: ["menu item not found"]});
     return res.json(menuItem);
   } catch (error) {
-    return helpers.returnError;
+    return helpers.returnError(res, error);
   }
 };
 
@@ -114,7 +114,7 @@ exports.isMenuItemExist = async (req, res, next) => {
     res.locals = {...res.locals, menuItem};
     next();
   } catch (error) {
-    return helpers.returnError;
+    return helpers.returnError(res, error);
   }
 };
 
@@ -129,7 +129,7 @@ exports.updateMenuItem = async (req, res, next) => {
     res.locals = {...res.locals, updatedMenu};
     next();
   } catch (error) {
-    return helpers.returnError;
+    return helpers.returnError(res, error);
   }
 };
 
@@ -141,7 +141,7 @@ exports.updatePriceHistory = async (req, res, next) => {
     }
     next();
   } catch (error) {
-    return helpers.returnError;
+    return helpers.returnError(res, error);
   }
 };
 
@@ -161,7 +161,7 @@ exports.updateMenuItemCategory = async (req, res) => {
     }
     return res.json(updatedMenu);
   } catch (error) {
-    return helpers.returnError;
+    return helpers.returnError(res, error);
   }
 };
 
@@ -171,7 +171,7 @@ exports.deleteMenuItem = async (req, res) => {
     await MenuItem.findByIdAndUpdate(menuItem._id, {isDeleted: true});
     return res.json({message: "menu item deleted successfully"});
   } catch (error) {
-    return helpers.returnError;
+    return helpers.returnError(res, error);
   }
 };
 
