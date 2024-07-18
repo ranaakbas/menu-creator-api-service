@@ -22,7 +22,7 @@ exports.checkRequiredFields = (req, res, next) => {
   if (!price) errors.push("price is required");
   if (!categories) errors.push("categories is required");
   if (errors.length > 0) {
-    return res.status(400).json({errors});
+    return helpers.returnError(res, errors);
   }
   next();
 };
@@ -38,7 +38,7 @@ exports.checkFieldsAreValid = (req, res, next) => {
   if (typeof price !== "number" || price < 0) errors.push("price is invalid");
   if (!Array.isArray(categories)) errors.push("categories is invalid");
   if (errors.length > 0) {
-    return res.status(400).json({errors});
+    return helpers.returnError(res, errors);
   }
 
   res.locals = {name, description, imageUrl, price, categories};
@@ -49,7 +49,7 @@ exports.checkCategoryIdsValid = async (req, res, next) => {
   const {categories} = res.locals;
   const categoryCount = await Category.countDocuments({_id: {$in: categories}});
   if (categoryCount !== categories.length) {
-    return res.status(400).json({errors: ["some category ids are invalid"]});
+    return helpers.returnError(res, ["some category ids are invalid"]);
   }
   next();
 };
@@ -98,7 +98,7 @@ exports.addItemToCategory = async (req, res) => {
 exports.getMenuItem = async (req, res) => {
   try {
     const menuItem = await MenuItem.findOne({_id: req.params.id, isDeleted: false});
-    if (!menuItem) return res.status(404).json({errors: ["menu item not found"]});
+    if (!menuItem) return helpers.returnError(res, ["menu item not found"]);
     return res.json(menuItem);
   } catch (error) {
     return helpers.returnError(res, error);
@@ -108,9 +108,7 @@ exports.getMenuItem = async (req, res) => {
 exports.isMenuItemExist = async (req, res, next) => {
   try {
     const menuItem = await MenuItem.exists({_id: req.params.id, isDeleted: false});
-    if (!menuItem) {
-      return res.status(404).json({errors: ["menu item not found"]});
-    }
+    if (!menuItem) return helpers.returnError(res, ["menu item not found"]);
     res.locals = {...res.locals, menuItem};
     next();
   } catch (error) {
