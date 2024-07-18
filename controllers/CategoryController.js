@@ -15,7 +15,7 @@ exports.checkRequiredFields = async (req, res, next) => {
   try {
     const {name} = req.body;
     if (!name) {
-      return helpers.returnError(res, ["Name is required"]);
+      return helpers.returnError(res, "Name is required");
     }
     next();
   } catch (error) {
@@ -28,7 +28,7 @@ exports.checkCategoryAlreadyExists = async (req, res, next) => {
     const {name} = req.body;
     const existingCategory = await Category.exists({name});
     if (existingCategory) {
-      return helpers.returnError(res, ["Already exists"]);
+      return helpers.returnError(res, "Already exists");
     }
     next();
   } catch (error) {
@@ -64,7 +64,7 @@ exports.checkNameIsUnique = async (req, res, next) => {
     const {name} = req.body;
     const isDifferentCategoryHasSameName = await Category.exists({name: name, _id: {$ne: id}});
     if (isDifferentCategoryHasSameName) {
-      return helpers.returnError(res, ["Already exists"]);
+      return helpers.returnError(res, "Already exists");
     }
     next();
   } catch (error) {
@@ -77,7 +77,7 @@ exports.checkCategoryIsExist = async (req, res, next) => {
     const {id} = req.params;
     const category = await Category.exists({_id: id});
     if (!category) {
-      return helpers.returnError(res, ["category not found"]);
+      return helpers.returnError(res, "category not found");
     }
     next();
   } catch (error) {

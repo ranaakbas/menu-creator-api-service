@@ -11,14 +11,3 @@ exports.returnError = (res, errorMessages) => {
 
   return res.status(400).json({errors});
 };
-
-// res.status(400).json({errors: XXXX});
-
-// XXXX = [error.message];
-// XXXX = ["name is required"];
-// XXXX = ["name is required", "category is required"];
-
-// catch error
-// returnError(res,error)
-// returnError(res,["name is required", "category is required"])
-// returnError(res,"name is required")

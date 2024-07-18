@@ -49,7 +49,7 @@ exports.checkCategoryIdsValid = async (req, res, next) => {
   const {categories} = res.locals;
   const categoryCount = await Category.countDocuments({_id: {$in: categories}});
   if (categoryCount !== categories.length) {
-    return helpers.returnError(res, ["some category ids are invalid"]);
+    return helpers.returnError(res, "some category ids are invalid");
   }
   next();
 };
@@ -98,7 +98,7 @@ exports.addItemToCategory = async (req, res) => {
 exports.getMenuItem = async (req, res) => {
   try {
     const menuItem = await MenuItem.findOne({_id: req.params.id, isDeleted: false});
-    if (!menuItem) return helpers.returnError(res, ["menu item not found"]);
+    if (!menuItem) return helpers.returnError(res, "menu item not found");
     return res.json(menuItem);
   } catch (error) {
     return helpers.returnError(res, error);
@@ -108,7 +108,7 @@ exports.getMenuItem = async (req, res) => {
 exports.isMenuItemExist = async (req, res, next) => {
   try {
     const menuItem = await MenuItem.exists({_id: req.params.id, isDeleted: false});
-    if (!menuItem) return helpers.returnError(res, ["menu item not found"]);
+    if (!menuItem) return helpers.returnError(res, "menu item not found");
     res.locals = {...res.locals, menuItem};
     next();
   } catch (error) {
