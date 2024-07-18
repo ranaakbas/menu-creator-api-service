@@ -52,7 +52,6 @@ exports.listCategoryItems = async (req, res) => {
 
     const menuItemCategories = await MenuItemCategory.find({category: id}).populate("menuItem");
     const data = menuItemCategories.map(e => e.menuItem);
-
     return res.json(data);
   } catch (error) {
     return helpers.returnError;
@@ -99,6 +98,7 @@ exports.updateCategory = async (req, res) => {
 
 exports.deleteCategory = async (req, res) => {
   try {
+    const {id} = req.params;
     await Category.findByIdAndDelete(id);
     return res.json({message: "category deleted successfully"});
   } catch (error) {

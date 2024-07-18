@@ -77,7 +77,7 @@ exports.createPriceHistory = async (req, res, next) => {
 
 exports.addItemToCategory = async (req, res) => {
   try {
-    const {categories} = res.locals;
+    const {categories, createdMenu} = res.locals;
     for (const category of categories) {
       await MenuItemCategory.findOneAndUpdate(
         {category, menuItem: createdMenu._id},
@@ -111,7 +111,7 @@ exports.isMenuItemExist = async (req, res, next) => {
     if (!menuItem) {
       return res.status(404).json({errors: ["menu item not found"]});
     }
-    res.locals = menuItem;
+    res.locals = {...res.locals, menuItem};
     next();
   } catch (error) {
     return helpers.returnError;
@@ -119,16 +119,14 @@ exports.isMenuItemExist = async (req, res, next) => {
 };
 
 exports.updateMenuItem = async (req, res, next) => {
-  const {name, description, imageUrl, price} = req.body;
-
   try {
-    const menuItem = req.menuItem;
+    const {name, description, imageUrl, price, menuItem} = res.locals;
     const updatedMenu = await MenuItem.findByIdAndUpdate(
       menuItem._id,
       {name, description, imageUrl, price},
       {new: true}
     );
-    res.locals = updatedMenu;
+    res.locals = {...res.locals, updatedMenu};
     next();
   } catch (error) {
     return helpers.returnError;
@@ -136,10 +134,8 @@ exports.updateMenuItem = async (req, res, next) => {
 };
 
 exports.updatePriceHistory = async (req, res, next) => {
-  const {price} = req.body;
-
   try {
-    const menuItem = req.menuItem;
+    const {price, menuItem, updatedMenu} = res.locals;
     if (menuItem.price !== price) {
       await PriceHistory.create({menuItem: updatedMenu._id, price: price});
     }
@@ -149,10 +145,9 @@ exports.updatePriceHistory = async (req, res, next) => {
   }
 };
 
-exports.updateMenuItemCategory = async (req, res, next) => {
-  const {categories} = req.body;
-
+exports.updateMenuItemCategory = async (req, res) => {
   try {
+    const {categories, updatedMenu} = res.locals;
     for (const category of categories) {
       await MenuItemCategory.findOneAndUpdate(
         {category, menuItem: updatedMenu._id},
@@ -186,6 +181,6 @@ exports.getPriceHistory = async (req, res) => {
     const priceHistory = await PriceHistory.find({menuItem: id});
     return res.json(priceHistory);
   } catch (error) {
-    return helpers.returnError;
+    return helpers.returnError(res, error);
   }
 };

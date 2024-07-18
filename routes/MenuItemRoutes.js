@@ -16,7 +16,7 @@ router.get("/:id", controller.getMenuItem);
 router.put(
   "/:id",
   controller.checkRequiredFields,
-  controller.makeValidation,
+  controller.checkFieldsAreValid,
   controller.isMenuItemExist,
   controller.updateMenuItem,
   controller.updatePriceHistory,

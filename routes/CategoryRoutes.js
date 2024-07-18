@@ -12,6 +12,6 @@ router.put(
   controller.checkCategoryIsExist,
   controller.updateCategory
 );
-router.delete("/:id", controller.checkNotExistCategory, controller.deleteCategory);
+router.delete("/:id", controller.checkCategoryIsExist, controller.deleteCategory);
 
 module.exports = router;
