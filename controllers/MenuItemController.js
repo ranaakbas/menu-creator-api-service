@@ -2,14 +2,13 @@ const MenuItem = require("../models/MenuItemModel");
 const Category = require("../models/CategoryModel");
 const MenuItemCategory = require("../models/MenuItemCategoryModel");
 const PriceHistory = require("../models/PriceHistoryModel");
-const helpers = require("../helpers");
 
 exports.listMenuItems = async (req, res) => {
   try {
     const menuItems = await MenuItem.find({isDeleted: false});
     return res.json(menuItems);
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };
 
@@ -22,7 +21,7 @@ exports.checkRequiredFields = (req, res, next) => {
   if (!price) errors.push("price is required");
   if (!categories) errors.push("categories is required");
   if (errors.length > 0) {
-    return helpers.returnError(res, errors);
+    return res.sendError(errors);
   }
   next();
 };
@@ -38,7 +37,7 @@ exports.checkFieldsAreValid = (req, res, next) => {
   if (typeof price !== "number" || price < 0) errors.push("price is invalid");
   if (!Array.isArray(categories)) errors.push("categories is invalid");
   if (errors.length > 0) {
-    return helpers.returnError(res, errors);
+    return res.sendError(errors);
   }
 
   res.locals = {name, description, imageUrl, price, categories};
@@ -49,7 +48,7 @@ exports.checkCategoryIdsValid = async (req, res, next) => {
   const {categories} = res.locals;
   const categoryCount = await Category.countDocuments({_id: {$in: categories}});
   if (categoryCount !== categories.length) {
-    return helpers.returnError(res, "some category ids are invalid");
+    return res.sendError("some category ids are invalid");
   }
   next();
 };
@@ -61,7 +60,7 @@ exports.createMenuItem = async (req, res, next) => {
     res.locals = {...res.locals, createdMenu};
     next();
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };
 
@@ -71,7 +70,7 @@ exports.createPriceHistory = async (req, res, next) => {
     await PriceHistory.create({menuItem: createdMenu._id, price: createdMenu.price});
     next();
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };
 
@@ -91,28 +90,28 @@ exports.addItemToCategory = async (req, res) => {
     }
     return res.json(createdMenu);
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };
 
 exports.getMenuItem = async (req, res) => {
   try {
     const menuItem = await MenuItem.findOne({_id: req.params.id, isDeleted: false});
-    if (!menuItem) return helpers.returnError(res, "menu item not found");
+    if (!menuItem) return res.sendError("menu item not found");
     return res.json(menuItem);
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };
 
 exports.isMenuItemExist = async (req, res, next) => {
   try {
     const menuItem = await MenuItem.exists({_id: req.params.id, isDeleted: false});
-    if (!menuItem) return helpers.returnError(res, "menu item not found");
+    if (!menuItem) return res.sendError("menu item not found");
     res.locals = {...res.locals, menuItem};
     next();
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };
 
@@ -127,7 +126,7 @@ exports.updateMenuItem = async (req, res, next) => {
     res.locals = {...res.locals, updatedMenu};
     next();
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };
 
@@ -139,7 +138,7 @@ exports.updatePriceHistory = async (req, res, next) => {
     }
     next();
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };
 
@@ -159,7 +158,7 @@ exports.updateMenuItemCategory = async (req, res) => {
     }
     return res.json(updatedMenu);
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };
 
@@ -169,7 +168,7 @@ exports.deleteMenuItem = async (req, res) => {
     await MenuItem.findByIdAndUpdate(menuItem._id, {isDeleted: true});
     return res.json({message: "menu item deleted successfully"});
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };
 
@@ -179,6 +178,6 @@ exports.getPriceHistory = async (req, res) => {
     const priceHistory = await PriceHistory.find({menuItem: id});
     return res.json(priceHistory);
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };

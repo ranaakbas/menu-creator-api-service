@@ -15,6 +15,21 @@ mongoose
   .then(result => console.log("DB Connected"))
   .catch(err => console.log(err));
 
+app.use(function (req, res, next) {
+  res.sendError = errorMessages => {
+    let errors;
+    if (typeof errorMessages === "string") {
+      errors = [errorMessages];
+    } else if (Array.isArray(errorMessages)) {
+      errors = errorMessages;
+    } else if (errorMessages.message) {
+      errors = [errorMessages.message];
+    }
+    return res.status(400).json({errors});
+  };
+  next();
+});
+
 app.use("/", routes);
 
 // 404

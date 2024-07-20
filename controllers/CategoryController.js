@@ -1,13 +1,12 @@
 const Category = require("../models/CategoryModel");
 const MenuItemCategory = require("../models/MenuItemCategoryModel");
-const helpers = require("../helpers");
 
 exports.listCategories = async (req, res) => {
   try {
     const categories = await Category.find();
     return res.json(categories);
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };
 
@@ -15,11 +14,11 @@ exports.checkRequiredFields = async (req, res, next) => {
   try {
     const {name} = req.body;
     if (!name) {
-      return helpers.returnError(res, "Name is required");
+      return res.sendError("Name is required");
     }
     next();
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };
 
@@ -28,11 +27,11 @@ exports.checkCategoryAlreadyExists = async (req, res, next) => {
     const {name} = req.body;
     const existingCategory = await Category.exists({name});
     if (existingCategory) {
-      return helpers.returnError(res, "Already exists");
+      return res.sendError("Already exists");
     }
     next();
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };
 
@@ -42,7 +41,7 @@ exports.createCategory = async (req, res, next) => {
     const newCategory = await Category.create({name});
     return res.json(newCategory);
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };
 
@@ -54,7 +53,7 @@ exports.listCategoryItems = async (req, res) => {
     const data = menuItemCategories.map(e => e.menuItem);
     return res.json(data);
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };
 
@@ -64,11 +63,11 @@ exports.checkNameIsUnique = async (req, res, next) => {
     const {name} = req.body;
     const isDifferentCategoryHasSameName = await Category.exists({name: name, _id: {$ne: id}});
     if (isDifferentCategoryHasSameName) {
-      return helpers.returnError(res, "Already exists");
+      return res.sendError("Already exists");
     }
     next();
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };
 
@@ -77,11 +76,11 @@ exports.checkCategoryIsExist = async (req, res, next) => {
     const {id} = req.params;
     const category = await Category.exists({_id: id});
     if (!category) {
-      return helpers.returnError(res, "category not found");
+      return res.sendError("category not found");
     }
     next();
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };
 
@@ -92,7 +91,7 @@ exports.updateCategory = async (req, res) => {
     const updatedCategory = await Category.findByIdAndUpdate(id, {name: name}, {new: true});
     return res.json(updatedCategory);
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };
 
@@ -102,6 +101,6 @@ exports.deleteCategory = async (req, res) => {
     await Category.findByIdAndDelete(id);
     return res.json({message: "category deleted successfully"});
   } catch (error) {
-    return helpers.returnError(res, error);
+    return res.sendError(error);
   }
 };
