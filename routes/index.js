@@ -2,10 +2,10 @@ const express = require("express");
 const router = express.Router();
 const MenuItemRoutes = require("./MenuItemRoutes");
 const CategoryRoutes = require("./CategoryRoutes");
-const RegisterRoutes = require("./RegisterRoutes");
+const AuthRoutes = require("./AuthRoutes");
 
 router.use("/menu-items", MenuItemRoutes);
 router.use("/categories", CategoryRoutes);
-router.use("/register", RegisterRoutes);
+router.use("/auth", AuthRoutes);
 
 module.exports = router;
