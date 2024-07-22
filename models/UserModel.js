@@ -34,5 +34,19 @@ UserSchema.pre("save", async function (next) {
 
 UserSchema.plugin(uniqueValidator);
 
+UserSchema.statics.login = async function (email, password) {
+  const user = await this.findOne({email: email});
+  if (user) {
+    const auth = await bcrypt.compare(password, user.password);
+    if (auth) {
+      return user;
+    } else {
+      throw Error("wrong password");
+    }
+  } else {
+    throw Error("no user");
+  }
+};
+
 const User = mongoose.model("User", UserSchema);
 module.exports = User;
