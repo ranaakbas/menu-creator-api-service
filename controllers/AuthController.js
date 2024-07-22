@@ -23,7 +23,7 @@ exports.checkFieldsAreValid = (req, res, next) => {
   if (typeof lastName !== "string" || lastName.length < 3 || lastName.length > 50) errors.push("Last name is invalid");
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (typeof email !== "string" || !emailRegex.test(email)) errors.push("Email is invalid");
-  if (typeof password !== "string" || password.length < 6) errors.push("Password is invalid");
+  if (typeof password !== "string" || password.length < 6 || password.length > 50) errors.push("Password is invalid");
 
   if (errors.length > 0) {
     return res.sendError(errors);
@@ -49,9 +49,7 @@ exports.checkEmailIsUnique = async (req, res, next) => {
 exports.register = async (req, res) => {
   try {
     const {firstName, lastName, email, password} = res.locals;
-    console.log("🚀 ~ exports.register= ~ firstName, lastName, email, password:", firstName, lastName, email, password);
     const newUser = await User.create({firstName, lastName, email, password});
-    console.log("buradsi patladi mi");
     return res.json(newUser);
   } catch (error) {
     return res.sendError(error);
