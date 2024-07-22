@@ -4,12 +4,19 @@ const controller = require("../controllers/AuthController");
 
 router.post(
   "/register",
-  controller.checkRequiredFields,
-  controller.checkFieldsAreValid,
+  controller.checkRequiredFieldsInRegister,
+  controller.checkFieldsAreValidInRegister,
   controller.checkEmailIsUnique,
   controller.register
 );
 
-router.post("/login", controller.login);
+router.post(
+  "/login",
+  controller.checkRequiredFieldsInLogin,
+  controller.checkFieldsAreValidInLogin,
+  controller.isEmailExist,
+  controller.isPasswordCorrect,
+  controller.loginWithToken
+);
 
 module.exports = router;
