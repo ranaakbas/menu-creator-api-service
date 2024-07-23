@@ -129,41 +129,22 @@ exports.loginWithToken = (req, res) => {
   }
 };
 
-exports.getToken = (req, res, next) => {
+exports.decodeToken = async (req, res, next) => {
   try {
     const token = req.cookies.jwt;
     if (!token) {
       return res.sendError("no token");
     }
-    res.locals = {...res.locals, token};
-    next();
-  } catch (error) {
-    return res.sendError({error});
-  }
-};
-
-exports.decodeToken = (req, res, next) => {
-  try {
-    const {token} = res.locals;
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded) {
+    if (!decoded?.id) {
       return res.sendError("invalid token");
     }
-    res.locals = {...res.locals, decoded};
-    next();
-  } catch (error) {
-    return res.sendError({error});
-  }
-};
-
-exports.findUserByToken = async (req, res, next) => {
-  try {
-    const {decoded} = res.locals;
-    const user = await User.findById(decoded.id);
+    const userId = decoded.id;
+    const user = await User.findById(userId);
     if (!user) {
       return res.sendError("no user");
     }
-    res.locals = {...res.locals, user};
+    res.locals = {...res.locals, userId};
     next();
   } catch (error) {
     return res.sendError({error});
@@ -172,9 +153,10 @@ exports.findUserByToken = async (req, res, next) => {
 
 exports.updateLastSessionDate = async (req, res, next) => {
   try {
-    const {user, decoded} = res.locals;
-    user.lastSessionDate = new Date();
-    await User.updateOne({_id: decoded.id}, {$set: {lastSessionDate: user.lastSessionDate}});
+    const {userId} = res.locals;
+    const lastSessionDate = new Date();
+    const user = await User.findByIdAndUpdate(userId, {lastSessionDate}, {new: true});
+    res.locals = {...res.locals, user};
     next();
   } catch (error) {
     return res.sendError({error});
@@ -183,9 +165,8 @@ exports.updateLastSessionDate = async (req, res, next) => {
 
 exports.getProfile = async (req, res) => {
   try {
-    const {decoded} = res.locals;
-    const updatedUser = await User.findById(decoded.id).lean();
-    return res.json(updatedUser);
+    const {user} = res.locals;
+    return res.json(user);
   } catch (error) {
     return res.sendError({error});
   }
