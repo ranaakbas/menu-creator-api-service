@@ -117,14 +117,76 @@ exports.isPasswordCorrect = async (req, res, next) => {
   }
 };
 
-exports.loginWithToken = async (req, res) => {
+exports.loginWithToken = (req, res) => {
   try {
     const {user} = res.locals;
 
     const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: MAX_AGE});
     res.cookie("jwt", token, {MAX_AGE: MAX_AGE});
-    return res.json(user);
+    return res.json({user, token});
   } catch (error) {
     return res.sendError(error);
+  }
+};
+
+exports.getToken = (req, res, next) => {
+  try {
+    const token = req.cookies.jwt;
+    if (!token) {
+      return res.sendError("no token");
+    }
+    res.locals = {...res.locals, token};
+    next();
+  } catch (error) {
+    return res.sendError({error});
+  }
+};
+
+exports.decodeToken = (req, res, next) => {
+  try {
+    const {token} = res.locals;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded) {
+      return res.sendError("invalid token");
+    }
+    res.locals = {...res.locals, decoded};
+    next();
+  } catch (error) {
+    return res.sendError({error});
+  }
+};
+
+exports.findUserByToken = async (req, res, next) => {
+  try {
+    const {decoded} = res.locals;
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.sendError("no user");
+    }
+    res.locals = {...res.locals, user};
+    next();
+  } catch (error) {
+    return res.sendError({error});
+  }
+};
+
+exports.updateLastSessionDate = async (req, res, next) => {
+  try {
+    const {user, decoded} = res.locals;
+    user.lastSessionDate = new Date();
+    await User.updateOne({_id: decoded.id}, {$set: {lastSessionDate: user.lastSessionDate}});
+    next();
+  } catch (error) {
+    return res.sendError({error});
+  }
+};
+
+exports.getProfile = async (req, res) => {
+  try {
+    const {decoded} = res.locals;
+    const updatedUser = await User.findById(decoded.id).lean();
+    return res.json(updatedUser);
+  } catch (error) {
+    return res.sendError({error});
   }
 };

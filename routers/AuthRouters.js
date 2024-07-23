@@ -19,4 +19,13 @@ router.post(
   controller.loginWithToken
 );
 
+router.get(
+  "/profile",
+  controller.getToken,
+  controller.decodeToken,
+  controller.findUserByToken,
+  controller.updateLastSessionDate,
+  controller.getProfile
+);
+
 module.exports = router;
