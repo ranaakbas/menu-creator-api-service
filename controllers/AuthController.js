@@ -1,6 +1,10 @@
 const User = require("../models/UserModel");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
-exports.checkRequiredFields = (req, res, next) => {
+const MAX_AGE = 60 * 60 * 24 * 1000;
+
+exports.checkRequiredFieldsForRegister = (req, res, next) => {
   const {firstName, lastName, email, password} = req.body;
 
   const errors = [];
@@ -14,7 +18,7 @@ exports.checkRequiredFields = (req, res, next) => {
   next();
 };
 
-exports.checkFieldsAreValid = (req, res, next) => {
+exports.checkFieldsAreValidForRegister = (req, res, next) => {
   const {firstName, lastName, email, password} = req.body;
 
   const errors = [];
@@ -51,6 +55,75 @@ exports.register = async (req, res) => {
     const {firstName, lastName, email, password} = res.locals;
     const newUser = await User.create({firstName, lastName, email, password});
     return res.json(newUser);
+  } catch (error) {
+    return res.sendError(error);
+  }
+};
+
+exports.checkRequiredFieldsForLogin = (req, res, next) => {
+  const {email, password} = req.body;
+
+  const errors = [];
+  if (!email) errors.push("email is required");
+  if (!password) errors.push("password is required");
+  if (errors.length > 0) {
+    return res.sendError(errors);
+  }
+  next();
+};
+
+exports.checkFieldsAreValidForLogin = (req, res, next) => {
+  const {email, password} = req.body;
+
+  const errors = [];
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (typeof email !== "string" || !emailRegex.test(email)) errors.push("Email is invalid");
+  if (typeof password !== "string" || password.length < 6 || password.length > 50) errors.push("Password is invalid");
+
+  if (errors.length > 0) {
+    return res.sendError(errors);
+  }
+
+  res.locals = {email, password};
+  next();
+};
+
+exports.isEmailExist = async (req, res, next) => {
+  try {
+    const {email} = res.locals;
+
+    const user = await User.findOne({email: email});
+    if (!user) {
+      return res.sendError("email or password wrong");
+    }
+    res.locals = {...res.locals, user};
+    next();
+  } catch (error) {
+    return res.sendError(error);
+  }
+};
+
+exports.isPasswordCorrect = async (req, res, next) => {
+  try {
+    const {password, user} = res.locals;
+
+    const auth = await bcrypt.compare(password, user.password);
+    if (!auth) {
+      return res.sendError("email or password wrong");
+    }
+    next();
+  } catch (error) {
+    return res.sendError(error);
+  }
+};
+
+exports.loginWithToken = async (req, res) => {
+  try {
+    const {user} = res.locals;
+
+    const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: MAX_AGE});
+    res.cookie("jwt", token, {MAX_AGE: MAX_AGE});
+    return res.json(user);
   } catch (error) {
     return res.sendError(error);
   }

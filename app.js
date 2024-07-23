@@ -1,6 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const routes = require("./routes/index");
+const routers = require("./routers/index");
 require("dotenv").config();
 
 const app = express();
@@ -30,7 +30,7 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.use("/", routes);
+app.use("/", routers);
 
 // 404
 app.use(function (req, res, next) {
