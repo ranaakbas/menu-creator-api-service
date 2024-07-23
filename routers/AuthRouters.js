@@ -4,16 +4,16 @@ const controller = require("../controllers/AuthController");
 
 router.post(
   "/register",
-  controller.checkRequiredFieldsInRegister,
-  controller.checkFieldsAreValidInRegister,
+  controller.checkRequiredFieldsForRegister,
+  controller.checkFieldsAreValidForRegister,
   controller.checkEmailIsUnique,
   controller.register
 );
 
 router.post(
   "/login",
-  controller.checkRequiredFieldsInLogin,
-  controller.checkFieldsAreValidInLogin,
+  controller.checkRequiredFieldsForLogin,
+  controller.checkFieldsAreValidForLogin,
   controller.isEmailExist,
   controller.isPasswordCorrect,
   controller.loginWithToken

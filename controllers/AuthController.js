@@ -2,7 +2,9 @@ const User = require("../models/UserModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
-exports.checkRequiredFieldsInRegister = (req, res, next) => {
+const MAX_AGE = 60 * 60 * 24 * 1000;
+
+exports.checkRequiredFieldsForRegister = (req, res, next) => {
   const {firstName, lastName, email, password} = req.body;
 
   const errors = [];
@@ -16,7 +18,7 @@ exports.checkRequiredFieldsInRegister = (req, res, next) => {
   next();
 };
 
-exports.checkFieldsAreValidInRegister = (req, res, next) => {
+exports.checkFieldsAreValidForRegister = (req, res, next) => {
   const {firstName, lastName, email, password} = req.body;
 
   const errors = [];
@@ -58,12 +60,7 @@ exports.register = async (req, res) => {
   }
 };
 
-const MAX_AGE = 60 * 60 * 24;
-const createToken = id => {
-  return jwt.sign({id}, process.env.JWT_SECRET, {expiresIn: MAX_AGE});
-};
-
-exports.checkRequiredFieldsInLogin = (req, res, next) => {
+exports.checkRequiredFieldsForLogin = (req, res, next) => {
   const {email, password} = req.body;
 
   const errors = [];
@@ -75,7 +72,7 @@ exports.checkRequiredFieldsInLogin = (req, res, next) => {
   next();
 };
 
-exports.checkFieldsAreValidInLogin = (req, res, next) => {
+exports.checkFieldsAreValidForLogin = (req, res, next) => {
   const {email, password} = req.body;
 
   const errors = [];
@@ -97,7 +94,7 @@ exports.isEmailExist = async (req, res, next) => {
 
     const user = await User.findOne({email: email});
     if (!user) {
-      return res.sendError("no user");
+      return res.sendError("email or password wrong");
     }
     res.locals = {...res.locals, user};
     next();
@@ -112,7 +109,7 @@ exports.isPasswordCorrect = async (req, res, next) => {
 
     const auth = await bcrypt.compare(password, user.password);
     if (!auth) {
-      return res.sendError("wrong password");
+      return res.sendError("email or password wrong");
     }
     next();
   } catch (error) {
@@ -124,8 +121,8 @@ exports.loginWithToken = async (req, res) => {
   try {
     const {user} = res.locals;
 
-    const token = createToken(user._id);
-    res.cookie("jwt", token, {MAX_AGE: MAX_AGE * 1000});
+    const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: MAX_AGE});
+    res.cookie("jwt", token, {MAX_AGE: MAX_AGE});
     return res.json(user);
   } catch (error) {
     return res.sendError(error);
