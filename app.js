@@ -2,10 +2,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const routers = require("./routers/index");
 require("dotenv").config();
+const cookieParser = require("cookie-parser");
 
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 const morgan = require("morgan");
 app.use(morgan("combined"));

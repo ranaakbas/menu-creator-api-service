@@ -21,6 +21,9 @@ const UserSchema = new Schema(
     password: {
       type: String,
       required: true
+    },
+    lastSessionDate: {
+      type: Date
     }
   },
   {timestamps: true}

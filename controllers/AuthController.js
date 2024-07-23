@@ -117,14 +117,57 @@ exports.isPasswordCorrect = async (req, res, next) => {
   }
 };
 
-exports.loginWithToken = async (req, res) => {
+exports.loginWithToken = (req, res) => {
   try {
     const {user} = res.locals;
 
     const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: MAX_AGE});
     res.cookie("jwt", token, {MAX_AGE: MAX_AGE});
-    return res.json(user);
+    return res.json({user, token});
   } catch (error) {
     return res.sendError(error);
+  }
+};
+
+exports.decodeToken = async (req, res, next) => {
+  try {
+    const token = req.cookies.jwt;
+    if (!token) {
+      return res.sendError("no token");
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded?.id) {
+      return res.sendError("invalid token");
+    }
+    const userId = decoded.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.sendError("no user");
+    }
+    res.locals = {...res.locals, userId};
+    next();
+  } catch (error) {
+    return res.sendError({error});
+  }
+};
+
+exports.updateLastSessionDate = async (req, res, next) => {
+  try {
+    const {userId} = res.locals;
+    const lastSessionDate = new Date();
+    const user = await User.findByIdAndUpdate(userId, {lastSessionDate}, {new: true});
+    res.locals = {...res.locals, user};
+    next();
+  } catch (error) {
+    return res.sendError({error});
+  }
+};
+
+exports.getProfile = async (req, res) => {
+  try {
+    const {user} = res.locals;
+    return res.json(user);
+  } catch (error) {
+    return res.sendError({error});
   }
 };
