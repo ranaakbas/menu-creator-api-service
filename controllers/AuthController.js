@@ -144,7 +144,7 @@ exports.decodeToken = async (req, res, next) => {
     if (!user) {
       return res.sendError("no user");
     }
-    res.locals = {...res.locals, userId};
+    res.locals = {...res.locals, userId, user};
     next();
   } catch (error) {
     return res.sendError({error});
@@ -167,6 +167,28 @@ exports.getProfile = async (req, res) => {
   try {
     const {user} = res.locals;
     return res.json(user);
+  } catch (error) {
+    return res.sendError({error});
+  }
+};
+
+exports.changePassword = exports.changePassword = async (req, res) => {
+  try {
+    const {oldPassword, newPassword} = req.body;
+    const {user} = res.locals;
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) return res.sendError("old password is incorrect");
+
+    if (typeof newPassword !== "string" || newPassword.length < 6 || newPassword.length > 50)
+      return res.sendError("new password invalid");
+
+    if (oldPassword == newPassword) return res.sendError("new password and old password cannot be the same");
+
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    const updatedUser = await User.findByIdAndUpdate(user._id, {password: hashedPassword});
+    return res.json(updatedUser);
   } catch (error) {
     return res.sendError({error});
   }

@@ -21,4 +21,6 @@ router.post(
 
 router.get("/profile", controller.decodeToken, controller.updateLastSessionDate, controller.getProfile);
 
+router.put("/change-password", controller.decodeToken, controller.changePassword);
+
 module.exports = router;
