@@ -24,6 +24,16 @@ const UserSchema = new Schema(
     },
     lastSessionDate: {
       type: Date
+    },
+    isEmailConfirm: {
+      type: Boolean,
+      default: false
+    },
+    emailConfirmationToken: {
+      type: String
+    },
+    emailConfirmedExpiresDate: {
+      type: Date
     }
   },
   {timestamps: true}
