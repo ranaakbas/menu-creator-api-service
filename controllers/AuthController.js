@@ -55,6 +55,21 @@ exports.register = async (req, res) => {
   try {
     const {firstName, lastName, email, password} = res.locals;
     const newUser = await User.create({firstName, lastName, email, password: await helpers.hashPassword(password)});
+
+    const emailConfirmationToken = helpers.generateRandomToken();
+    const emailConfirmedExpiresDate = new Date(Date.now() + MAX_AGE);
+
+    await User.updateOne(
+      {_id: newUser._id},
+      {
+        emailConfirmationToken,
+        emailConfirmedExpiresDate
+      }
+    );
+
+    const confirmationUrl = `${process.env.HOST}/auth/confirm/${emailConfirmationToken}`;
+    console.log(`Email confirmation link: ${confirmationUrl}`);
+
     return res.json(newUser);
   } catch (error) {
     return res.sendError(error);
@@ -172,7 +187,7 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-exports.changePassword = exports.changePassword = async (req, res) => {
+exports.changePassword = async (req, res) => {
   try {
     const {oldPassword, newPassword} = req.body;
     const {user} = res.locals;
@@ -192,5 +207,29 @@ exports.changePassword = exports.changePassword = async (req, res) => {
     return res.json(updatedUser);
   } catch (error) {
     return res.sendError({error});
+  }
+};
+
+exports.validateEmailToken = async (req, res) => {
+  try {
+    const {token} = req.params;
+
+    const user = await User.findByIdAndUpdate({
+      emailConfirmationToken: token,
+      emailConfirmedExpiresDate: {$gt: Date.now()}
+    });
+
+    if (!user) {
+      return res.sendError("invalid or expired token");
+    }
+
+    await User.findByIdAndUpdate(user._id, {
+      emailConfirmed: true,
+      emailConfirmationToken: null,
+      emailConfirmedExpiresDate: null
+    });
+    return res.json("successful");
+  } catch (error) {
+    return res.sendError(error);
   }
 };

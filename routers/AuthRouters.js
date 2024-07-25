@@ -23,4 +23,6 @@ router.get("/profile", controller.decodeToken, controller.updateLastSessionDate,
 
 router.put("/change-password", controller.decodeToken, controller.changePassword);
 
+router.get("/confirm/:token", controller.validateEmailToken);
+
 module.exports = router;
