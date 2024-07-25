@@ -177,11 +177,14 @@ exports.changePassword = exports.changePassword = async (req, res) => {
     const {oldPassword, newPassword} = req.body;
     const {user} = res.locals;
 
-    const isMatch = await bcrypt.compare(oldPassword, user.password);
-    if (!isMatch) return res.sendError("old password is incorrect");
+    if (typeof oldPassword !== "string" || oldPassword.length < 6 || oldPassword.length > 50)
+      return res.sendError("old password invalid");
 
     if (typeof newPassword !== "string" || newPassword.length < 6 || newPassword.length > 50)
       return res.sendError("new password invalid");
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) return res.sendError("old password is incorrect");
 
     if (oldPassword === newPassword) return res.sendError("new password and old password cannot be the same");
 
