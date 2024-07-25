@@ -62,14 +62,12 @@ exports.register = async (req, res) => {
     await User.updateOne(
       {_id: newUser._id},
       {
-        $set: {
-          emailConfirmationToken,
-          emailConfirmedExpiresDate
-        }
+        emailConfirmationToken,
+        emailConfirmedExpiresDate
       }
     );
 
-    const confirmationUrl = `http://localhost:3000/auth/confirm/${emailConfirmationToken}`;
+    const confirmationUrl = `${process.env.HOST}/auth/confirm/${emailConfirmationToken}`;
     console.log(`Email confirmation link: ${confirmationUrl}`);
 
     return res.json(newUser);
@@ -216,7 +214,7 @@ exports.validateEmailToken = async (req, res) => {
   try {
     const {token} = req.params;
 
-    const user = await User.findOne({
+    const user = await User.findByIdAndUpdate({
       emailConfirmationToken: token,
       emailConfirmedExpiresDate: {$gt: Date.now()}
     });
@@ -225,17 +223,11 @@ exports.validateEmailToken = async (req, res) => {
       return res.sendError("invalid or expired token");
     }
 
-    await User.findByIdAndUpdate(
-      user._id,
-      {
-        $set: {
-          isEmailConfirm: true,
-          emailConfirmationToken: null,
-          emailConfirmedExpiresDate: null
-        }
-      },
-      {new: true}
-    );
+    await User.findByIdAndUpdate(user._id, {
+      emailConfirmed: true,
+      emailConfirmationToken: null,
+      emailConfirmedExpiresDate: null
+    });
     return res.json("successful");
   } catch (error) {
     return res.sendError(error);

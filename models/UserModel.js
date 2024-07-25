@@ -25,7 +25,7 @@ const UserSchema = new Schema(
     lastSessionDate: {
       type: Date
     },
-    isEmailConfirm: {
+    emailConfirmed: {
       type: Boolean,
       default: false
     },
