@@ -1,6 +1,7 @@
 const User = require("../models/UserModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const helpers = require("../helpers");
 
 const MAX_AGE = 60 * 60 * 24 * 1000;
 
@@ -53,7 +54,7 @@ exports.checkEmailIsUnique = async (req, res, next) => {
 exports.register = async (req, res) => {
   try {
     const {firstName, lastName, email, password} = res.locals;
-    const newUser = await User.create({firstName, lastName, email, password});
+    const newUser = await User.create({firstName, lastName, email, password: await helpers.hashPassword(password)});
     return res.json(newUser);
   } catch (error) {
     return res.sendError(error);
@@ -139,12 +140,11 @@ exports.decodeToken = async (req, res, next) => {
     if (!decoded?.id) {
       return res.sendError("invalid token");
     }
-    const userId = decoded.id;
-    const user = await User.findById(userId);
+    const user = await User.findById(decoded.id);
     if (!user) {
       return res.sendError("no user");
     }
-    res.locals = {...res.locals, userId};
+    res.locals = {...res.locals, user};
     next();
   } catch (error) {
     return res.sendError({error});
@@ -153,10 +153,10 @@ exports.decodeToken = async (req, res, next) => {
 
 exports.updateLastSessionDate = async (req, res, next) => {
   try {
-    const {userId} = res.locals;
+    const {user} = res.locals;
     const lastSessionDate = new Date();
-    const user = await User.findByIdAndUpdate(userId, {lastSessionDate}, {new: true});
-    res.locals = {...res.locals, user};
+    const currentUser = await User.findByIdAndUpdate(user._id, {lastSessionDate}, {new: true});
+    res.locals = {...res.locals, user: currentUser};
     next();
   } catch (error) {
     return res.sendError({error});
@@ -167,6 +167,29 @@ exports.getProfile = async (req, res) => {
   try {
     const {user} = res.locals;
     return res.json(user);
+  } catch (error) {
+    return res.sendError({error});
+  }
+};
+
+exports.changePassword = exports.changePassword = async (req, res) => {
+  try {
+    const {oldPassword, newPassword} = req.body;
+    const {user} = res.locals;
+
+    if (typeof oldPassword !== "string" || oldPassword.length < 6 || oldPassword.length > 50)
+      return res.sendError("old password invalid");
+
+    if (typeof newPassword !== "string" || newPassword.length < 6 || newPassword.length > 50)
+      return res.sendError("new password invalid");
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) return res.sendError("old password is incorrect");
+
+    if (oldPassword === newPassword) return res.sendError("new password and old password cannot be the same");
+
+    const updatedUser = await User.findByIdAndUpdate(user._id, {password: await helpers.hashPassword(newPassword)});
+    return res.json(updatedUser);
   } catch (error) {
     return res.sendError({error});
   }
