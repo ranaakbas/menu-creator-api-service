@@ -5,7 +5,7 @@ const PriceHistory = require("../models/PriceHistoryModel");
 
 exports.listMenuItems = async (req, res) => {
   try {
-    const menuItems = await MenuItem.find({isDeleted: false});
+    const menuItems = await MenuItem.find({isDeleted: false, user: res.locals.user._id});
     return res.json(menuItems);
   } catch (error) {
     return res.sendError(error);
@@ -40,7 +40,7 @@ exports.checkFieldsAreValid = (req, res, next) => {
     return res.sendError(errors);
   }
 
-  res.locals = {name, description, imageUrl, price, categories};
+  res.locals = {...res.locals, name, description, imageUrl, price, categories};
   next();
 };
 
@@ -56,7 +56,7 @@ exports.checkCategoryIdsValid = async (req, res, next) => {
 exports.createMenuItem = async (req, res, next) => {
   try {
     const {name, description, imageUrl, price} = res.locals;
-    const createdMenu = await MenuItem.create({name, description, imageUrl, price});
+    const createdMenu = await MenuItem.create({name, description, imageUrl, price, user: res.locals.user._id});
     res.locals = {...res.locals, createdMenu};
     next();
   } catch (error) {
@@ -96,7 +96,7 @@ exports.addItemToCategory = async (req, res) => {
 
 exports.getMenuItem = async (req, res) => {
   try {
-    const menuItem = await MenuItem.findOne({_id: req.params.id, isDeleted: false});
+    const menuItem = await MenuItem.findOne({_id: req.params.id, isDeleted: false, user: res.locals.user._id});
     if (!menuItem) return res.sendError("menu item not found");
     return res.json(menuItem);
   } catch (error) {
@@ -106,7 +106,7 @@ exports.getMenuItem = async (req, res) => {
 
 exports.isMenuItemExist = async (req, res, next) => {
   try {
-    const menuItem = await MenuItem.exists({_id: req.params.id, isDeleted: false});
+    const menuItem = await MenuItem.exists({_id: req.params.id, isDeleted: false, user: res.locals.user._id});
     if (!menuItem) return res.sendError("menu item not found");
     res.locals = {...res.locals, menuItem};
     next();

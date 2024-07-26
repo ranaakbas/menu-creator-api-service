@@ -214,7 +214,7 @@ exports.validateEmailToken = async (req, res) => {
   try {
     const {token} = req.params;
 
-    const user = await User.findByIdAndUpdate({
+    const user = await User.findOne({
       emailConfirmationToken: token,
       emailConfirmedExpiresDate: {$gt: Date.now()}
     });
