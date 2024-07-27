@@ -36,22 +36,18 @@ app.use(function (req, res, next) {
 
 app.use(async (req, res, next) => {
   try {
-    if (req.path.startsWith("/auth")) {
-      return next();
-    }
     const token = req.cookies.jwt;
-    if (!token) {
-      return res.sendError("no login");
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      if (!decoded) {
+        return res.sendError("decoded not work");
+      }
+      const user = await User.findById(decoded.id);
+      if (!user) {
+        return res.sendError("token invalid");
+      }
+      res.locals.user = user;
     }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded) {
-      return res.sendError("no login");
-    }
-    const user = await User.findById(decoded.id);
-    if (!user) {
-      return res.sendError("no login");
-    }
-    res.locals.user = user;
     next();
   } catch (error) {
     return res.sendError("no login");
