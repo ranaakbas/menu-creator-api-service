@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const routers = require("./routers/index");
 require("dotenv").config();
 const cookieParser = require("cookie-parser");
+const User = require("./models/UserModel");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 
@@ -30,6 +32,26 @@ app.use(function (req, res, next) {
     return res.status(400).json({errors});
   };
   next();
+});
+
+app.use(async (req, res, next) => {
+  try {
+    const token = req.cookies.jwt;
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      if (!decoded) {
+        return res.sendError("decoded not work");
+      }
+      const user = await User.findById(decoded.id);
+      if (!user) {
+        return res.sendError("token invalid");
+      }
+      res.locals.user = user;
+    }
+    next();
+  } catch (error) {
+    return res.sendError("no login");
+  }
 });
 
 app.use("/", routers);

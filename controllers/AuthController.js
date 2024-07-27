@@ -145,27 +145,6 @@ exports.loginWithToken = (req, res) => {
   }
 };
 
-exports.decodeToken = async (req, res, next) => {
-  try {
-    const token = req.cookies.jwt;
-    if (!token) {
-      return res.sendError("no token");
-    }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded?.id) {
-      return res.sendError("invalid token");
-    }
-    const user = await User.findById(decoded.id);
-    if (!user) {
-      return res.sendError("no user");
-    }
-    res.locals = {...res.locals, user};
-    next();
-  } catch (error) {
-    return res.sendError({error});
-  }
-};
-
 exports.updateLastSessionDate = async (req, res, next) => {
   try {
     const {user} = res.locals;
@@ -214,7 +193,7 @@ exports.validateEmailToken = async (req, res) => {
   try {
     const {token} = req.params;
 
-    const user = await User.findByIdAndUpdate({
+    const user = await User.findOne({
       emailConfirmationToken: token,
       emailConfirmedExpiresDate: {$gt: Date.now()}
     });
